@@ -15,14 +15,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var shareButton: UIButton!
+    @IBOutlet weak var indexLabel: UILabel!
     
-    var classificationResults : [String] = []
+//    var classificationResults : [String] = []
     
     let imagePicker = UIImagePickerController()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         shareButton.isHidden = true
+        indexLabel.isHidden = true
         imagePicker.delegate = self
         
         
@@ -59,24 +61,32 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
         }
         let request = VNCoreMLRequest(model: model) { (request, error) in
-            guard let results = request.results as? [VNClassificationObservation] else{
+            guard let results = request.results?.first as? VNClassificationObservation else{
                 fatalError("Model failed to process image")
             }
             print(results)
-            if let firstResult = results.first {
-                if firstResult.identifier.contains("hotdog") {
-                    self.navigationItem.title = "Hotdog!"
-                    self.shareButton.isHidden = false
-                    self.navigationController?.navigationBar.barTintColor = UIColor.green
-                    self.navigationController?.navigationBar.isTranslucent = false
-                } else{
-                    self.shareButton.isHidden = true
-                    self.navigationItem.title = "Not Hotdag!"
-                    self.navigationController?.navigationBar.barTintColor = UIColor.red
-                    self.navigationController?.navigationBar.isTranslucent = false
-                }
-                
-            }
+            let index = results.confidence
+
+            self.indexLabel.isHidden = false
+            self.indexLabel.text = "Confidence:\(index)"
+            self.navigationItem.title = results.identifier.capitalized
+
+            
+//            if let firstResult = results.first {
+//
+//                if firstResult.identifier.contains("hotdog") {
+//                    self.navigationItem.title = "Hotdog!"
+//                    self.shareButton.isHidden = false
+//                    self.navigationController?.navigationBar.barTintColor = UIColor.green
+//                    self.navigationController?.navigationBar.isTranslucent = false
+//                } else{
+//                    self.shareButton.isHidden = true
+//                    self.navigationItem.title = "Not Hotdag!"
+//                    self.navigationController?.navigationBar.barTintColor = UIColor.red
+//                    self.navigationController?.navigationBar.isTranslucent = false
+//                }
+//
+//            }
         }
         let handler = VNImageRequestHandler(ciImage: image)
         do{
@@ -89,12 +99,19 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     @IBAction func cameraTapped(_ sender: UIBarButtonItem) {
         
-        imagePicker.sourceType = .photoLibrary
-        //        imagePicker.sourceType = .camera //.photolibrary
+//        imagePicker.sourceType = .photoLibrary
+        imagePicker.sourceType = .camera
         imagePicker.allowsEditing = false
         present(imagePicker, animated: true, completion: nil)
         
     }
+    
+    @IBAction func photoLibraryTapped(_ sender: UIBarButtonItem) {
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.allowsEditing = false
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
     
     @IBAction func shareButtonPressed(_ sender: UIButton) {
         if SLComposeViewController.isAvailable(forServiceType: SLServiceTypeTwitter){
