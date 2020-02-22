@@ -6,3 +6,4 @@ This app is basically based on the inceptionv3 model. It helps people to classif
 
 The interface is as shown in the screenshot:
 
+![result](doc/result.jpg)
